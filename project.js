@@ -27,6 +27,7 @@ export class Project extends Scene {
             //exorcist: new Shape_From_File("assets/exorcist.obj"),
             road: new Cube(),
             ghost: new Shape_From_File("assets/ghost2.obj"),
+            exorcist: new Shape_From_File("assets/exorcist2.obj"),
 
         }
         //console.log(this.shapes.box_1.arrays.texture_coord)
@@ -65,26 +66,25 @@ export class Project extends Scene {
         
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
 
-        //for some reason changing the light position wasnt working but changing "color" by scaling it by t keeps the road bright? idk
-        // yea this def still needs to be fixed
-        let light_position = vec4(10, 10, 10, 1);
-        program_state.lights = [new Light(light_position, color(t, t, t, t), 1000)];
+        //experimented with the lighting but this def needs to be fixed
+        let light_position = vec4(10, 10, 10-t, 1);
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000*t)];
+        //program_state.lights = [new Light(light_position, color(t, t, t, t), 1000*t)];
 
         let model_transform = Mat4.identity();
-        model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
+        //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
         model_transform = model_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
-
-        //bro takes too long to load
-        //this.shapes.exorcist.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#808080")}));
+        model_transform = model_transform.times(Mat4.translation(0, 2.5, t));
+        this.shapes.exorcist.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#964b00")}));
 
         model_transform = Mat4.identity();
-        model_transform = model_transform.times(Mat4.scale(5, 1, 1000));
+        model_transform = model_transform.times(Mat4.scale(10, 1, 1000));
         this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}))
-        program_state.set_camera(Mat4.translation(0, -3.5, t));
+        program_state.set_camera(Mat4.translation(0, -8, t-15));
         model_transform = Mat4.identity();
         //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
         model_transform = model_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
-        model_transform = model_transform.times(Mat4.translation(0, 3, 10+t));
+        model_transform = model_transform.times(Mat4.translation(0, 2.5, 15+t));
         this.shapes.ghost.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
     }
 }
