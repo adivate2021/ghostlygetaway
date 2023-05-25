@@ -1,4 +1,5 @@
 import {defs, tiny} from './examples/common.js';
+import { Shape_From_File } from './examples/obj-file-demo.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
@@ -19,11 +20,16 @@ export class Project extends Scene {
         //        texture coordinates as required for cube #2.  You can either do this by modifying the cube code or by modifying
         //        a cube instance's texture_coords after it is already created.
         this.shapes = {
-            box_1: new Cube(),
+            /*box_1: new Cube(),
             box_2: new Cube(),
-            axis: new Axis_Arrows()
+            axis: new Axis_Arrows(),*/
+            //deleted this exorcist but add a new one
+            //exorcist: new Shape_From_File("assets/exorcist.obj"),
+            road: new Cube(),
+            ghost: new Shape_From_File("assets/ghost2.obj"),
+
         }
-        console.log(this.shapes.box_1.arrays.texture_coord)
+        //console.log(this.shapes.box_1.arrays.texture_coord)
 
 
         // TODO:  Create the materials required to texture both cubes with the correct images and settings.
@@ -51,21 +57,35 @@ export class Project extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(0, 0, -8));
+            program_state.set_camera(Mat4.translation(0, -3.5, -8));
         }
 
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 100);
-
-        const light_position = vec4(10, 10, 10, 1);
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-
+        
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        let model_transform = Mat4.identity();
 
-        // TODO:  Draw the required boxes. Also update their stored matrices.
-        // You can remove the folloeing line.
-        this.shapes.axis.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
+        //for some reason changing the light position wasnt working but changing "color" by scaling it by t keeps the road bright? idk
+        // yea this def still needs to be fixed
+        let light_position = vec4(10, 10, 10, 1);
+        program_state.lights = [new Light(light_position, color(t, t, t, t), 1000)];
+
+        let model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
+        model_transform = model_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
+
+        //bro takes too long to load
+        //this.shapes.exorcist.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#808080")}));
+
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(5, 1, 1000));
+        this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}))
+        program_state.set_camera(Mat4.translation(0, -3.5, t));
+        model_transform = Mat4.identity();
+        //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
+        model_transform = model_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
+        model_transform = model_transform.times(Mat4.translation(0, 3, 10+t));
+        this.shapes.ghost.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
     }
 }
 
