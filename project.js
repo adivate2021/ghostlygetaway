@@ -8,6 +8,7 @@ const {
 const {Cube, Axis_Arrows, Textured_Phong} = defs
 
 const SPEED = 20;
+const JUMPSPEED = 3;
 
 export class Project extends Scene {
     /**
@@ -78,6 +79,10 @@ export class Project extends Scene {
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
         this.left = false;
         this.right = false;
+        this.jump = false;
+        this.isJumping = false;
+        this.timeJumping = 0;
+
         this.ghost_transform = Mat4.identity();
         this.ghost_transform = this.ghost_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
         this.ghost_transform = this.ghost_transform.times(Mat4.translation(0, 2.5, 15));
@@ -94,6 +99,11 @@ export class Project extends Scene {
             this.right = true;
         }, undefined, () => {
             this.right = false;
+        });
+        this.key_triggered_button("Jump", [" "], () => {
+            this.jump = true;
+        }, undefined, () => {
+            this.jump = false;
         });
     }
 
@@ -157,6 +167,25 @@ export class Project extends Scene {
         if (this.right && this.ghost_transform[0][3] <= 7.0) { //can't go further right than x=10
             this.ghost_transform = this.ghost_transform.times(Mat4.translation(-1, 0, 0));
         }
+        console.log(this.ghost_transform[1][3])
+
+        //jumping physics
+
+        if (this.ghost_transform[1][3] <= 2.5){ //if player is on ground
+            if (this.isJumping) { //no longer jumping when landed back on ground
+                this.isJumping = false;
+            }
+            if (this.jump) { //can't start jumping unless on the ground and player presses space
+                this.timeJumping = 0; //this is used as "t" value in x0 + v0t -0.5at^2, must be reset every time new jump initiated
+                this.isJumping = true;
+            }
+        }
+        if (this.isJumping) {
+            this.timeJumping += dt;
+            let y = Math.max(2.5, 2.5 + 10 * JUMPSPEED * this.timeJumping - 0.5 * 9.8 * JUMPSPEED ** 2 * this.timeJumping ** 2) //set y coord to new position based on kinematics, also make sure y pos never clips into ground (below 2.5)
+            this.ghost_transform[1][3] = y; 
+        }
+
         this.shapes.ghost.draw(context, program_state, this.ghost_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
     }
 }
