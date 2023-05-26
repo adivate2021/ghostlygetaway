@@ -48,10 +48,25 @@ export class Project extends Scene {
         }
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.left = false;
+        this.right = false;
+        this.ghost_transform = Mat4.identity();
+        this.ghost_transform = this.ghost_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
+        this.ghost_transform = this.ghost_transform.times(Mat4.translation(0, 2.5, 15));
     }
 
     make_control_panel() {
         // TODO:  Implement requirement #5 using a key_triggered_button that responds to the 'c' key.
+        this.key_triggered_button("Move left", ["a"], () => {
+            this.left = true;
+        }, undefined, () => {
+            this.left = false;
+        });
+        this.key_triggered_button("Move right", ["d"], () => {
+            this.right = true;
+        }, undefined, () => {
+            this.right = false;
+        });
     }
 
     display(context, program_state) {
@@ -81,11 +96,17 @@ export class Project extends Scene {
         model_transform = model_transform.times(Mat4.scale(10, 1, 1000));
         this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}))
         program_state.set_camera(Mat4.translation(0, -8, t-15));
-        model_transform = Mat4.identity();
+
+        // let ghost_transform = Mat4.identity();
         //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
-        model_transform = model_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
-        model_transform = model_transform.times(Mat4.translation(0, 2.5, 15+t));
-        this.shapes.ghost.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
+        this.ghost_transform = this.ghost_transform.times(Mat4.translation(0, 0, dt));
+        if (this.left) {
+            this.ghost_transform = this.ghost_transform.times(Mat4.translation(1, 0, 0)); //+x is left ig
+        }
+        if (this.right) {
+            this.ghost_transform = this.ghost_transform.times(Mat4.translation(-1, 0, 0));
+        }
+        this.shapes.ghost.draw(context, program_state, this.ghost_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
     }
 }
 
