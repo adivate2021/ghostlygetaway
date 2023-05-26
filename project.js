@@ -135,27 +135,40 @@ export class Project extends Scene {
         // this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
         program_state.set_camera(Mat4.translation(0, -8, SPEED * t-15));
 
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(10, 1, 1000)).times(Mat4.translation(0, 15, 0));
+        this.shapes.ceiling.arrays.texture_coord.forEach(
+            (v, i, l) => v[1] = v[1] * 100
+        );
+        this.shapes.ceiling.draw(context, program_state, model_transform, this.materials.ceiling);
+
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(10, 1, 1000));
+        this.shapes.road.arrays.texture_coord.forEach(
+            (v, i, l) => v[1] = v[1] * 100
+        );
+        this.shapes.road.draw(context, program_state, model_transform, this.materials.road);
+
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(1, 10, 1000)).times(Mat4.translation(-10, 1, 0));
+        this.shapes.leftWall.arrays.texture_coord.forEach(
+            (v, i, l) => v[0] = v[0] * 100
+        );
+        this.shapes.leftWall.draw(context, program_state, model_transform, this.materials.wall);
+
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(1, 10, 1000)).times(Mat4.translation(10, 1, 0));
+        this.shapes.rightWall.arrays.texture_coord.forEach(
+            (v, i, l) => v[0] = v[0] * 100
+        );
+        this.shapes.rightWall.draw(context, program_state, model_transform, this.materials.wall);
+
         for (let i = 0; i < 100; i++) {
 
             model_transform = Mat4.identity();
             model_transform = model_transform.times(Mat4.scale(3, 1, 3)).times(Mat4.translation(0, 14, -10*i));
             this.shapes.ceiling.draw(context, program_state, model_transform, this.materials.light);
 
-            model_transform = Mat4.identity();
-            model_transform = model_transform.times(Mat4.scale(10, 1, 10)).times(Mat4.translation(0, 15, -2*i));
-            this.shapes.ceiling.draw(context, program_state, model_transform, this.materials.ceiling);
-
-            model_transform = Mat4.identity();
-            model_transform = model_transform.times(Mat4.scale(10, 1, 10)).times(Mat4.translation(0, 0, -2*i));
-            this.shapes.road.draw(context, program_state, model_transform, this.materials.road);
-
-            model_transform = Mat4.identity();
-            model_transform = model_transform.times(Mat4.scale(1, 10, 10)).times(Mat4.translation(-10, 1, -2*i));
-            this.shapes.leftWall.draw(context, program_state, model_transform, this.materials.wall);
-
-            model_transform = Mat4.identity();
-            model_transform = model_transform.times(Mat4.scale(1, 10, 10)).times(Mat4.translation(10, 1, -2*i));
-            this.shapes.rightWall.draw(context, program_state, model_transform, this.materials.wall);
         }
 
         // let ghost_transform = Mat4.identity();
