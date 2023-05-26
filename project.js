@@ -7,6 +7,8 @@ const {
 
 const {Cube, Axis_Arrows, Textured_Phong} = defs
 
+const SPEED = 20;
+
 export class Project extends Scene {
     /**
      *  **Base_scene** is a Scene that can be added to any display canvas.
@@ -28,11 +30,13 @@ export class Project extends Scene {
             road: new Cube(),
             leftWall: new Cube(),
             rightWall: new Cube(),
+            ceiling: new Cube(),
+            light: new Cube(),
             ghost: new Shape_From_File("assets/ghost2.obj"),
             exorcist: new Shape_From_File("assets/exorcist2.obj"),
 
         }
-        //console.log(this.shapes.box_1.arrays.texture_coord)
+        console.log(this.shapes.leftWall.arrays.texture_coord)
 
 
         // TODO:  Create the materials required to texture both cubes with the correct images and settings.
@@ -47,7 +51,29 @@ export class Project extends Scene {
                 ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
                 texture: new Texture("assets/stars.png")
             }),
+            wall: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 0.5, diffusivity: 0.5, specularity: 0.1,
+                texture: new Texture("assets/brick_texture.jpg", "LINEAR_MIPMAP_LINEAR")
+            }),
+            road: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1, diffusivity: 0.5, specularity: 0.1,
+                texture: new Texture("assets/dungeon_floor_texture.jpg", "LINEAR_MIPMAP_LINEAR")
+            }),
+            ceiling: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1, diffusivity: 0.5, specularity: 0.1,
+                texture: new Texture("assets/ceiling.jpg", "LINEAR_MIPMAP_LINEAR")
+            }),
+            light: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1, diffusivity: 0.5, specularity: 0.1,
+                texture: new Texture("assets/lights.jpg", "LINEAR_MIPMAP_LINEAR")
+            }),
         }
+
+        // this.shapes.leftWall.arrays.texture_coord = Vector.cast([0, 0], [1, 0], [0, 1], [1, 1]);
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
         this.left = false;
@@ -84,36 +110,51 @@ export class Project extends Scene {
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
 
         //experimented with the lighting but this def needs to be fixed
-        let light_position = vec4(0, 10, 10-t, 1);
+        let light_position = vec4(0, 10, 10-SPEED*t, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000*t)];
         //program_state.lights = [new Light(light_position, color(t, t, t, t), 1000*t)];
 
         let model_transform = Mat4.identity();
         //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
         model_transform = model_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
-        model_transform = model_transform.times(Mat4.translation(0, 2.5, t));
+        model_transform = model_transform.times(Mat4.translation(0, 2.5, SPEED * t));
         this.shapes.exorcist.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#964b00")}));
 
-        model_transform = Mat4.identity();
-        model_transform = model_transform.times(Mat4.scale(10, 1, 1000));
-        this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
-        program_state.set_camera(Mat4.translation(0, -8, t-15));
+        // model_transform = Mat4.identity();
+        // model_transform = model_transform.times(Mat4.scale(10, 1, 1000));
+        // this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
+        program_state.set_camera(Mat4.translation(0, -8, SPEED * t-15));
 
-        model_transform = Mat4.identity();
-        model_transform = model_transform.times(Mat4.scale(1, 10, 1000)).times(Mat4.translation(-10, 0, 0));
-        this.shapes.leftWall.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
+        for (let i = 0; i < 100; i++) {
 
-        model_transform = Mat4.identity();
-        model_transform = model_transform.times(Mat4.scale(1, 10, 1000)).times(Mat4.translation(10, 0, 0));
-        this.shapes.rightWall.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
+            model_transform = Mat4.identity();
+            model_transform = model_transform.times(Mat4.scale(3, 1, 3)).times(Mat4.translation(0, 14, -10*i));
+            this.shapes.ceiling.draw(context, program_state, model_transform, this.materials.light);
+
+            model_transform = Mat4.identity();
+            model_transform = model_transform.times(Mat4.scale(10, 1, 10)).times(Mat4.translation(0, 15, -2*i));
+            this.shapes.ceiling.draw(context, program_state, model_transform, this.materials.ceiling);
+
+            model_transform = Mat4.identity();
+            model_transform = model_transform.times(Mat4.scale(10, 1, 10)).times(Mat4.translation(0, 0, -2*i));
+            this.shapes.road.draw(context, program_state, model_transform, this.materials.road);
+
+            model_transform = Mat4.identity();
+            model_transform = model_transform.times(Mat4.scale(1, 10, 10)).times(Mat4.translation(-10, 1, -2*i));
+            this.shapes.leftWall.draw(context, program_state, model_transform, this.materials.wall);
+
+            model_transform = Mat4.identity();
+            model_transform = model_transform.times(Mat4.scale(1, 10, 10)).times(Mat4.translation(10, 1, -2*i));
+            this.shapes.rightWall.draw(context, program_state, model_transform, this.materials.wall);
+        }
 
         // let ghost_transform = Mat4.identity();
         //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
-        this.ghost_transform = this.ghost_transform.times(Mat4.translation(0, 0, dt));
-        if (this.left && this.ghost_transform[0][3] >= -10) { //can't go further left than x=-10
+        this.ghost_transform = this.ghost_transform.times(Mat4.translation(0, 0, SPEED * dt));
+        if (this.left && this.ghost_transform[0][3] >= -6.8) { //can't go further left than x=-10
             this.ghost_transform = this.ghost_transform.times(Mat4.translation(1, 0, 0)); //+x is left bc ghost is flipped 180 deg
         }
-        if (this.right && this.ghost_transform[0][3] <= 10) { //can't go further right than x=10
+        if (this.right && this.ghost_transform[0][3] <= 7.0) { //can't go further right than x=10
             this.ghost_transform = this.ghost_transform.times(Mat4.translation(-1, 0, 0));
         }
         this.shapes.ghost.draw(context, program_state, this.ghost_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
