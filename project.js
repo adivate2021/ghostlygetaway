@@ -26,6 +26,8 @@ export class Project extends Scene {
             //deleted this exorcist but add a new one
             //exorcist: new Shape_From_File("assets/exorcist.obj"),
             road: new Cube(),
+            leftWall: new Cube(),
+            rightWall: new Cube(),
             ghost: new Shape_From_File("assets/ghost2.obj"),
             exorcist: new Shape_From_File("assets/exorcist2.obj"),
 
@@ -82,7 +84,7 @@ export class Project extends Scene {
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
 
         //experimented with the lighting but this def needs to be fixed
-        let light_position = vec4(10, 10, 10-t, 1);
+        let light_position = vec4(0, 10, 10-t, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000*t)];
         //program_state.lights = [new Light(light_position, color(t, t, t, t), 1000*t)];
 
@@ -94,16 +96,24 @@ export class Project extends Scene {
 
         model_transform = Mat4.identity();
         model_transform = model_transform.times(Mat4.scale(10, 1, 1000));
-        this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}))
+        this.shapes.road.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
         program_state.set_camera(Mat4.translation(0, -8, t-15));
+
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(1, 10, 1000)).times(Mat4.translation(-10, 0, 0));
+        this.shapes.leftWall.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
+
+        model_transform = Mat4.identity();
+        model_transform = model_transform.times(Mat4.scale(1, 10, 1000)).times(Mat4.translation(10, 0, 0));
+        this.shapes.rightWall.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
 
         // let ghost_transform = Mat4.identity();
         //model_transform = model_transform.times(Mat4.scale(0.25, 0.25, 0.25));
         this.ghost_transform = this.ghost_transform.times(Mat4.translation(0, 0, dt));
-        if (this.left) {
-            this.ghost_transform = this.ghost_transform.times(Mat4.translation(1, 0, 0)); //+x is left ig
+        if (this.left && this.ghost_transform[0][3] >= -10) { //can't go further left than x=-10
+            this.ghost_transform = this.ghost_transform.times(Mat4.translation(1, 0, 0)); //+x is left bc ghost is flipped 180 deg
         }
-        if (this.right) {
+        if (this.right && this.ghost_transform[0][3] <= 10) { //can't go further right than x=10
             this.ghost_transform = this.ghost_transform.times(Mat4.translation(-1, 0, 0));
         }
         this.shapes.ghost.draw(context, program_state, this.ghost_transform, this.materials.phong.override({color: hex_color("#ffffff")}))
