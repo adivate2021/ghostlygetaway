@@ -577,7 +577,7 @@ const Phong_Shader = defs.Phong_Shader =
         // at that pixel with the vectors toward the camera and light sources.
 
 
-        constructor(num_lights = 2) {
+        constructor(num_lights = 50) {
             super();
             this.num_lights = num_lights;
         }
