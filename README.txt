@@ -26,5 +26,5 @@ Then, go to localhost:8000.
 The game should immediately start.
 
 Once the game starts, use A to move the ghost left and D to move the ghost right. Use SPACE to jump and C to crouch. 
-Try to avoid all of the obstacles on the path (which consist of witches, ogres, fire, and bats). If at any point one wants
-to restart the game, simply press R. If the ghost hits two obstacles and the GAME OVER screen pops up, press R to play again.
+Try to avoid all of the obstacles on the path (which consist of witches, ogres, fire, and bats). If at any point one wants to restart the game, simply press R. 
+If the ghost hits two obstacles and the GAME OVER screen pops up, press R to play again.
